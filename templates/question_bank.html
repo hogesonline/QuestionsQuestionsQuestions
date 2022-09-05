@@ -1,0 +1,26 @@
+<!doctype html>
+<html>
+   <body>
+      <table border = 1>
+         <thead>
+            <td>Scientific Name</td>
+            <td>Common Name</td>
+            <td>Diet</td>
+            <td>Habitat</td>
+            <td>Vertebrate</td>
+         </thead>
+         
+         {% for row in rows %}
+            <tr>
+               <td>{{row["scientific_name"]}}</td>
+               <td>{{row["common_name"]}}</td>
+               <td>{{row["diet"]}}</td>
+               <td>{{row["habitat"]}}</td>
+               <td>{{row["vertebrate"]}}</td>	
+            </tr>
+         {% endfor %}
+      </table>
+      
+      <a href = "/">Go back to home page</a>
+   </body>
+</html>
