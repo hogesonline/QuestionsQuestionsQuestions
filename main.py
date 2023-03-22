@@ -1,10 +1,31 @@
 #import all the webserver stuff
-from flask import Flask, render_template, request
+from flask import Flask, render_template, flash, request, redirect, url_for
 #import the sqlite stuff
-import sqlite3
+import sqlite3, os
+from werkzeug.utils import secure_filename
 #the name of your app - we'll use this a bunch
 app = Flask(__name__)
+app.secret_key = 'any random string'
+UPLOAD_FOLDER = '/images'
+ALLOWED_EXTENSIONS = set(['txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif'])
 
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+
+def upload_file():
+    if request.method == 'POST':
+        # check if the post request has the file part
+        if 'file' not in request.files:
+            flash('No file part')
+            return redirect(request.url)
+        file = request.files['file']
+        # if user does not select file, browser also
+        # submit a empty part without filename
+        if file.filename == '':
+            flash('No selected file')
+            return redirect(request.url)
+        if file and allowed_file(file.filename):
+            filename = secure_filename(file.filename)
+            file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
 
 #when someone goes to /reset in the website...
 @app.route('/reset')
@@ -15,9 +36,12 @@ def reset_db():
   #make a message that sayd "Opened the database successfully"
   msg = "Opened database successfully"
   #drop the table called animals -- allows you to change the table called "animals"
-  conn.execute("DROP TABLE questions;")
-  conn.execute("DROP TABLE tag_join;")
-  conn.execute("DROP TABLE tags;")
+  #do this better
+  
+  conn.execute("DROP TABLE if exists questions;")
+  conn.execute("DROP TABLE if exists tag_join;")
+  conn.execute("DROP TABLE if exists tags;")
+  
   #create the table called animals withe the defined fields
   conn.execute('CREATE TABLE questions(question_id INTEGER PRIMARY KEY AUTOINCREMENT, type, topic, marks INTEGER, image, text, answera, answerb, answerc, answerd, marking_criteria, correct);')
   conn.execute('CREATE TABLE tag_join(question_id INTEGER, tag_id INTEGER);')
@@ -49,6 +73,11 @@ def addrec():
   #if they POSTed information --> that means they pressed submit on our animal.html page 
     if request.method == 'POST':
       #make an empty message
+      if 'image' not in request.files:
+          flash('No file part')
+          image = request.files['image']
+          path = os.path.join(app.config['UPLOAD_FOLDER'], image.filename)
+          image.save(path)
       msg1 = ""
       #This is tricky, but it's just trapping errors for us. 
       #try means, see if you get to the end of a series of steps and if
@@ -76,7 +105,7 @@ def addrec():
         #make a cursor which helps us do all the things
         cur = con.cursor()
         #execute the insert statement in SQL
-        cur.execute(f"""INSERT INTO questions (type, topic, marks, image, text, answera, answerb, answerc, answerd, marking_criteria, correct) VALUES(?,?,?,?,?,?,?,?,?,?,?);""", (question_type, topic, marks, image, text, ansA, ansB, ansC, ansD, correct, markingcrit))
+        cur.execute(f"""INSERT INTO questions (type, topic, marks, image, text, image,  answera, answerb, answerc, answerd, marking_criteria, correct) VALUES(?,?,?,?,?,?,?,?,?,?,?);""", (question_type, topic, marks, path, text, ansA, ansB, ansC, ansD, correct, markingcrit))
 
         #save the database change
         con.commit()
@@ -113,10 +142,10 @@ def get_list():
   #make a cursor which helps us do all the things
   cur = con.cursor()
   #execute a select on the data in the database
-  cur.execute("select scientific_name, common_name, diet, habitat, vertebrate from animals")
+  cur.execute("SELECT type, topic, marks, image, text, answera, answerb, answerc, answerd, marking_criteria, correct FROM questions")
   #fetch all the records 
   rows1 = cur.fetchall(); 
-  print(rows1[0]["scientific_name"])
+  print(rows1[0]["text"])
   #return what the webserver should do next, 
   #go to the list page with the rows variable as rows
   return render_template("list.html",rows = rows1)

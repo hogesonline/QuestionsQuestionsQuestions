@@ -1,10 +1,10 @@
 <html>
    <body>
-      <form action = "{{ url_for('addrec') }}" method = "POST">
+      <form action = "{{ url_for('addrec') }}" method = "POST" enctype="multipart/form-data">
         <h1>Add a Question</h1>
         Question type<br/>
-        <input type="radio" name="type" id="text"> Text <br>
-        <input type="radio" name="type" id="mc"> Multiple Choice <br>
+        <input type="radio" name="text" id="type"> Text <br>
+        <input type="radio" name="mc" id="type"> Multiple Choice <br>
          
         Topic<br/>
         <select id="topic" name="topic">
@@ -30,7 +30,7 @@
         <input type = "text" name = "marks" /><br/><br/>
 
         Image<br/>
-        <input type = "text" name = "image" /><br/><br/>
+        <input type = "file" name = "image" /><br/><br/>
         
          Text<br/>
         <input type = "text" name = "text" /><br/><br/>
