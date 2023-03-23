@@ -1,7 +1,46 @@
-<!doctype html>
 <html>
    <body>
-      result of addition : {{ msg }}
-      <h2><a href = "\">go back to home page</a></h2>
+      <form action = "{{ url_for('addrec') }}" method = "POST">
+        <h1>Search for Questions</h1>
+        Question type<br/>
+        <input type="radio" name="type" id="text" value="text"> Text <br>
+        <input type="radio" name="type" id="mc" value="mc"> Multiple Choice <br>
+         
+        Topic<br/>
+        <select id="topic" name="topic">
+          <option value=""> </option>
+            <option value="social ethical">Social and ethical issues</option>
+            <option value="hardware software">Hardware and software</option>
+            <option value="sda">Software development approaches</option>
+            <option value="dppd">Defining and understanding the problem, and planning and designing software solutions</option>
+            <option value="implementing">Implementing software solutions</option>
+            <option value="testing">Testing and evaluating software solutions</option>
+            <option value="maintaining">Maintaining software solutions</option>
+            <option value="developing solutions">Developing Software Solutions</option>
+            <option value="application sda">Application of software development approaches</option>
+            <option value="defining">Defining and understanding the problem</option>
+            <option value="planning">Planning and designing software solutions</option>
+            <option value="implementing">Implementation of software solution</option>
+            <option value="developing package">Developing a Solution Package</option>
+            <option value="paradigms">Programming Paradigms</option>
+            <option value="interrelationship">The interrelationship between software and hardware</option>
+         </select><br/><br/>
+        
+        Marks<br/>
+        <input type = "text" name = "marks" /><br/><br/>
+
+        Question Text Contains<br/>
+        <input type = "textContains" name = "textContains" /><br/><br/>
+
+        tags<br/>
+        <select id="tags" name="tags" size="8" multiple>
+          {% for row in rows %}
+    <option value="{{row["type"]}}">{{row["type"]|capitalize }}</option>
+          {% endfor %}
+        </select><br><br>
+     
+
+         <input type = "submit" value = "Search" /><br/>
+      </form>
    </body>
 </html>
