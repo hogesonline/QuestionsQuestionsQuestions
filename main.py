@@ -14,6 +14,26 @@ app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 def allowed_file(filename):     
   return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
+def get_unique_tags(con, cur, tags):
+  try:
+    tag_tuple = tuple(tags)
+    tag_query   = f'SELECT tag_text FROM tags WHERE tag_text NOT IN {format(tag_tuple)}'
+    cur.execute(tag_query)
+    tags_to_add   = cur.fetchall()
+  except Exception as e:
+    print("well, something went wrong.")
+    tags_to_add = []
+
+  if tags_to_add:
+    for tag in tags_to_add:
+      cur.execute("""INSERT INTO tags (tag_text) VALUES(?);""", (tag))
+    con.commit()
+    cur.execute(f"""SELECT tag_id FROM tags WHERE tag_text NOT IN {format(tag_tuple)}""")
+    ids_to_add = cur.fetchall()
+    return ids_to_add
+  return []
+
+  
 #when someone goes to /reset in the website...
 @app.route('/reset')
 #call the function reset_db()
@@ -67,8 +87,7 @@ def addrec():
       #do the "except" steps and undo everything you did in the try section.
       
       try:
-        #assign each of hte pieces of information we receive to a new variable
-        #sn is short for scientific name
+        #assign each of the pieces of information we receive to a new variable
         question_type = request.form['type']
         print(question_type)
         topic = request.form['topic']
@@ -80,16 +99,25 @@ def addrec():
         ansD = request.form['ansD']
         correct = request.form['correct']
         markingcrit = request.form['markingcrit']
+        tags = request.form['tags'].lower().split(';')
         #need to add something about tags here.
         #connect to the db
         con = sqlite3.connect("database.db")
         #make a cursor which helps us do all the things
         cur = con.cursor()
         #execute the insert statement in SQL
+        ids_to_add = get_unique_tags(con, cur, tags)
+        
         cur.execute("""INSERT INTO questions (type, topic, marks, text, answera, answerb, answerc, answerd, marking_criteria, correct) VALUES(?,?,?,?,?,?,?,?,?,?);""", (question_type, topic, marks,  text, ansA, ansB, ansC, ansD, markingcrit, correct))
         #dealing with images - need them to have the Question_num as an image name
         question_id = cur.lastrowid
         con.commit()
+
+        if ids_to_add:
+          for tag_id in ids_to_add:
+            cur.execute("""INSERT INTO tag_join (question_id, tag_id) VALUES(?,?);""", (question_id, tag_id))
+          con.commit() 
+        
         if 'image' not in request.files:
             flash('No file part')
         else:
@@ -98,7 +126,7 @@ def addrec():
             # submit a empty part without filename
             if file.filename == '':
                 flash('No selected file')
-            elif file:
+            elif file: 
               filename = f"Q{question_id}.{file.filename.rsplit('.', 1)[1].lower()}"
               print(filename) 
               path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
@@ -136,13 +164,25 @@ def get_list():
   #make a cursor which helps us do all the things
   cur = con.cursor()
   #execute a select on the data in the database
-  cur.execute("SELECT type, topic, marks, image, text, answera, answerb, answerc, answerd, marking_criteria, correct FROM questions")
+  cur.execute("SELECT question_id, type, topic, marks, image, text, answera, answerb, answerc, answerd, marking_criteria, correct FROM questions")
   #fetch all the records 
-  rows1 = cur.fetchall(); 
-  print(rows1[0]["text"])
+  questions = cur.fetchall(); 
+  outquestions = []
+  for qid in range(len(questions)):
+    question_id = questions[qid][0]
+    #get the tags list
+    cur.execute("""SELECT tag_text FROM tag_join INNER JOIN tags ON tag_join.tag_id = tags.tag_id WHERE tag_join.question_id = ? ;""",(question_id,))
+    tags = cur.fetchall()
+    tags = ", ".join(tags)
+    outq = list(questions[qid])
+    outq.append(tags)
+    print(outq)
+    outquestions.append(outq)
+  
+    
   #return what the webserver should do next, 
   #go to the list page with the rows variable as rows
-  return render_template("list.html",rows = rows1)
+  return render_template("list.html",rows = outquestions)
 
 @app.route('/filters')
 #run the function get_list
@@ -152,9 +192,9 @@ def filters():
   cur = con.cursor()
   #execute the insert statement in SQL
   cur.execute("""SELECT DISTINCT tag_text FROM tags""")
-  rows1 = cur.fetchall()
+  tags = cur.fetchall()
   #just redirects to the page where you can search for a question after looking up the available tags
-  return render_template("filters.html", rows = rows1)
+  return render_template("filters.html", rows = tags)
 
 
 
