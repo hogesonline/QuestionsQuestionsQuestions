@@ -1,0 +1,133 @@
+/* General document styles */
+* {
+  box-sizing: border-box;
+}
+
+h1 {
+  display: block;
+  width: auto;
+  background-color: rgb(222, 31, 66);
+  color: white;
+  padding: 5px 15px;
+  margin-left: -30px;
+}
+
+a {
+  color: rgb(180, 31, 66);
+  text-decoration: none;
+}
+
+.logo {
+  display: inline-block;
+  font-family: 'Rock Salt';
+  font-size: 16px;
+  line-height: 16px;
+  color: white;
+}
+
+ul {
+  list-style-type: none;
+  padding: 0;
+  margin: 0;
+}
+article {
+  width: 400px;
+  display: inline-grid;
+  gap: 1.5rem;
+  grid-template-columns: 2fr;
+  grid-template-rows: 2fr auto auto;
+  margin-top: 2rem;
+  position: relative;
+  padding-left: 30px;
+  padding-bottom: 30px;
+  background-color: #fafafa;;
+  border-radius: 10px;
+  box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.2);
+  
+}
+body {
+  font-family: Arial, Helvetica, sans-serif;
+}
+form {
+  max-width: 500px;
+  margin: 0 auto;
+  padding: 20px;
+  background-color: #f1f1f1;
+  border-radius: 10px;
+  box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.2);
+}
+
+h2, h3 {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+label {
+  display: block;
+  margin-bottom: 10px;
+}
+
+input[type="text"],
+input[type="email"],
+textarea {
+  width: 100%;
+  padding: 1em;
+  margin-bottom: 2em;
+  border: none;
+  border-radius: 0.5em;
+  box-shadow: 0 0 0.5em rgba(0, 0, 0, 0.1);
+}
+
+textarea {
+  height: 15em;
+}
+
+button, input[type="submit"]{
+  background-color: #4CAF50;
+  color: #fff;
+  border: none;
+  padding: 1em 2em;
+  border-radius: 0.5em;
+  font-size: 1.5em;
+  cursor: pointer;
+  transition: background-color 0.2s ease-in-out;
+}
+
+button:hover, input[type="submit"]:hover {
+  background-color: #3e8e41;
+}
+
+select {
+  // A reset of styles, including removing the default dropdown arrow
+  appearance: none;
+  background-color: white;
+  border: none;
+  padding: 0 1em 0 0;
+  margin: 0;
+  width: 100%;
+  font-family: inherit;
+  font-size: inherit;
+  cursor: inherit;
+  line-height: inherit;
+  border-radius: 5px;
+  padding: 10px 20px;
+}
+
+.question > .question-text {
+  display: inline-block;
+  width: 300px;
+  margin-left: 30px;
+}
+.question-image {
+  width: 20em;
+}
+.tag {
+  display: inline-block;
+  padding: 5px;
+  margin-right: 3px;
+  border-radius: 5px;
+  background-color: #c9cbfd;
+
+}
+
+  

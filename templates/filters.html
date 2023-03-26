@@ -1,6 +1,9 @@
 <html>
+  <head>
+    <link rel="stylesheet" type="text/css" href="/static/main.css" />
+  </head>
    <body>
-      <form action = "{{ url_for('addrec') }}" method = "POST">
+      <form action = "{{ url_for('filtered') }}" method = "POST">
         <h1>Search for Questions</h1>
         Question type<br/>
         <input type="radio" name="type" id="text" value="text"> Text <br>
@@ -24,20 +27,20 @@
             <option value="developing package">Developing a Solution Package</option>
             <option value="paradigms">Programming Paradigms</option>
             <option value="interrelationship">The interrelationship between software and hardware</option>
-         </select><br/><br/>
-        
+         </select><br/>
+        <br/>
         Marks<br/>
-        <input type = "text" name = "marks" /><br/><br/>
+        <input type = "text" name = "marks" /><br/>
 
         Question Text Contains<br/>
-        <input type = "textContains" name = "textContains" /><br/><br/>
+        <input type = "text" name = "textContains" /><br/>
 
         tags<br/>
         <select id="tags" name="tags" size="8" multiple>
-          {% for row in rows %}
-    <option value="{{row["type"]}}">{{row["type"]|capitalize }}</option>
+          {% for tag in rows %}
+    <option value="{{tag}}">{{tag|title }}</option>
           {% endfor %}
-        </select><br><br>
+        </select><br/><br/>
      
 
          <input type = "submit" value = "Search" /><br/>

@@ -1,38 +1,34 @@
 <!doctype html>
 <html>
+  <head>
+    <link rel="stylesheet" type="text/css" href="/static/main.css" />
+  </head>
    <body>
-      <table border = 1>
-         <thead>
-           <td>Type</td> 
-           <td>Topic</td>
-           <td>Marks</td>
-           <td>Image</td>
-           <td>Text</td>
-           <td>Answer A</td>
-           <td>Answer B</td>
-           <td>Answer C</td>
-           <td>Answer D</td>
-           <td>Marking Criteria</td>
-           <td>correct</td>
-         </thead>
-         
+
          {% for row in rows %}
-            <tr>
-               <td>{{row["type"]}}</td>
-               <td>{{row["topic"]}}</td>
-               <td>{{row["marks"]}}</td>
-               <td>{{row["image"]}}</td>
-               <td>{{row["text"]}}</td>	
-              <td>{{row["answera"]}}</td>	
-              <td>{{row["answerb"]}}</td>	
-              <td>{{row["answerc"]}}</td>	
-              <td>{{row["answerd"]}}</td>	
-              <td>{{row["marking_criteria"]}}</td>	
-              <td>{{row["correct"]}}</td>	
-            </tr>
-         {% endfor %}
-      </table>
+            
+      <article class="question-text">
+        <h2>{{row["topic"]}}</h2>
+        {% if row["image"] %}
+          <img class="question-image" src="{{row['image']}}" alt="Question on {{row['image']}}">
+        {% endif %}
+        <div class="question-text">
+          
+          <p>Marks: {{row["marks"]}}</p>
+          <p>{{row["text"]}}</p>
+          <div>
+            {% set tags = row["tags"].split(';') %}
+            {% for tag in tags %}
+                <h4 class="tag">{{ tag }}</h4>
+            {% endfor %} 
+          </div>
+        </div>
+      </article>
+
+          {% endfor %}
+
       
-      <a href = "/">Go back to home page</a>
+      <div style="display:block"><a href = "/">Go back to home page</a></div>
+      
    </body>
 </html>

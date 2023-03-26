@@ -1,4 +1,7 @@
 <html>
+  <head>
+    <link rel="stylesheet" type="text/css" href="/static/main.css" />
+  </head>
    <body>
       <form action = "{{ url_for('addrec') }}" method = "POST" enctype="multipart/form-data">
         <h1>Add a Question</h1>
@@ -52,9 +55,14 @@
 
         Marking Criteria<br/>
         <input type = "text" name = "markingcrit" /><br/><br/>
-
-        Tags (separate tags with semicolons) <br/>
-        <textarea id="tags" name="tags" rows="3" cols="30"></textarea><br/><br/>
+        Tags (select all that apply)<br/>
+        <select id="tags" name="tags" size="8" multiple>
+          {% for tag in tags %}
+    <option value="{{tag}}">{{tag|title }}</option>
+          {% endfor %}
+        </select><br/><br/>
+        Add Tags (separate tags with semicolons e.g. algorihtms; ebnf) <br/>
+        <input type = "text"  id="add_tags" name="add_tags" /><br/><br/>
 
          <input type = "submit" value = "submit" /><br/>
       </form>
