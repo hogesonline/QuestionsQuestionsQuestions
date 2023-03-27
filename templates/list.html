@@ -8,12 +8,8 @@
          {% for row in rows %}
             
       <article class="question-text">
-        <h2>{{row["topic"]}}</h2>
-        {% if row["image"] %}
-          <img class="question-image" src="{{row['image']}}" alt="Question on {{row['image']}}">
-        {% endif %}
+        <header class="box-heading {{ row['topic'] }}"><h3>{{row["topic_long"]}}</h3></header>
         <div class="question-text">
-          
           <p>Marks: {{row["marks"]}}</p>
           <p>{{row["text"]}}</p>
           <div>
@@ -22,6 +18,7 @@
                 <h4 class="tag">{{ tag }}</h4>
             {% endfor %} 
           </div>
+          <button id="{{ row['question_id'] }}" class="detail-button" type="button" onclick="popUp(this)">Detail</button>
         </div>
       </article>
 
@@ -29,6 +26,47 @@
 
       
       <div style="display:block"><a href = "/">Go back to home page</a></div>
-      
+     
+     <!-- Model blocks--> 
+     {% for row in rows %}
+  <div class="modal" id="modal_{{ row['question_id'] }}" role="dialog">
+    <div class="modal-view">
+      <!-- Modal content-->
+      <div>
+        <div>
+          <h4 class="modal-title">{{row["topic_long"]}}</h4>
+        </div>
+        <div class="modal-body">
+          <p>{{row["image"]}}</p>
+          <p>Marks: {{row["marks"]}}</p>
+          <p>{{row["text"]}}</p>
+          <p>{{row["marking_criteria"]}}</p>
+          <p>{{row["answer"]}}</p>
+          <div>
+            {% set tags = row["tags"].split(';') %}
+            {% for tag in tags %}
+                <h4 class="tag">{{ tag }}</h4>
+            {% endfor %} 
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="detail-button"  onclick="popDown()">Close</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+{% endfor %}
    </body>
+  <script>
+    let thisId = "";
+    function popUp(element) {
+      thisId = element.id
+      document.getElementById(`modal_${thisId}`).style.display = "block";
+    }
+    function popDown() {
+      console.log ("ID: "+ thisId)
+      document.getElementById(`modal_${thisId}`).style.display = "none";
+    }
+  </script>
 </html>

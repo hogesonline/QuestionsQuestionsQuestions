@@ -1,6 +1,7 @@
 import os, sqlite3
 UPLOAD_FOLDER = 'static/images'
 
+ 
 def reset_tables(conn, msg):
   try:
     with conn:
@@ -9,8 +10,10 @@ def reset_tables(conn, msg):
       conn.execute("DROP TABLE if exists questions;")
       conn.execute("DROP TABLE if exists tag_join;")
       conn.execute("DROP TABLE if exists tags;")
+      conn.execute("DROP TABLE if exists users;")
       
       #create the table called animals withe the defined fields
+      conn.execute('CREATE TABLE users(user_id INTEGER PRIMARY KEY, username, password_hash, admin);')
       conn.execute('CREATE TABLE questions(question_id INTEGER PRIMARY KEY AUTOINCREMENT, type, topic, marks INTEGER, image, text, answera, answerb, answerc, answerd, marking_criteria, correct);')
       conn.execute('CREATE TABLE tags(tag_id INTEGER PRIMARY KEY, tag_text);')
       conn.execute('CREATE TABLE tag_join(question_id INTEGER, tag_id INTEGER FOREIGN KEY(question_id) REFERENCES questions(question_id) INTEGER FOREIGN KEY(tag_id) REFERENCES tags(tag_id));')
@@ -89,10 +92,54 @@ def add_image (app, conn, cur, file, image_type, question_id):
     return False
 
 def get_questions(conn, cur, filters=[]):
+  
   with conn:
     if not filters:
-      cur.execute('''SELECT q.question_id, type, topic, marks, image, text, answera, answerb, answerc, answerd, marking_criteria, correct, GROUP_CONCAT(tag_text,";") tags FROM questions q
-LEFT JOIN tag_join tj ON q.question_id = tj.question_id INNER JOIN tags t ON tj.tag_id = t.tag_id GROUP BY  q.question_id, type, topic, marks, image, text, answera, answerb, answerc, answerd, marking_criteria, correct;''')
+      cur.execute('''SELECT 
+                    q.question_id, 
+                    type, 
+                    topic, 
+                    CASE
+                      WHEN topic="social_ethical" THEN "Social and ethical issues"
+                      WHEN topic="hardware_software" THEN "Hardware and software"
+                      WHEN topic="sda" THEN "Software development approaches"
+                      WHEN topic="dppd" THEN "Defining and understanding the problem, and planning and designing software solutions"
+                      WHEN topic="implementing" THEN "Implementing software solutions"
+                      WHEN topic="testing" THEN "Testing and evaluating software solutions"
+                      WHEN topic="maintaining" THEN "Maintaining software solutions"
+                      WHEN topic="developing_solutions" THEN "Developing Software Solutions"
+                      WHEN topic="application_sda" THEN "Application of software development approaches"
+                      WHEN topic="defining" THEN "Defining and understanding the problem"
+                      WHEN topic="planning" THEN "Planning and designing software solutions"
+                      WHEN topic="implementing" THEN "Implementation of software solution"
+                      WHEN topic="developing_package" THEN "Developing a Solution Package"
+                      WHEN topic="paradigms" THEN "Programming Paradigms"
+                      WHEN topic="interrelationship" THEN "The interrelationship between software and hardware"
+                    END AS topic_long, 
+                    marks, 
+                    image, 
+                    text, 
+                    answera, 
+                    answerb, 
+                    answerc, 
+                    answerd, 
+                    marking_criteria, 
+                    correct, 
+                    GROUP_CONCAT(tag_text,";") tags FROM questions q
+LEFT JOIN tag_join tj ON q.question_id = tj.question_id INNER JOIN tags t ON tj.tag_id = t.tag_id 
+                    GROUP BY  
+                    q.question_id, 
+                    type, 
+                    topic, 
+                    marks, 
+                    image, 
+                    text, 
+                    answera, 
+                    answerb, 
+                    answerc, 
+                    answerd, 
+                    marking_criteria, 
+                    correct;''')
       #fetch all the records 
       questions = cur.fetchall();
       print(questions[0]["text"])

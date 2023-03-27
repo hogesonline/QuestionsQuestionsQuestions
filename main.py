@@ -1,5 +1,5 @@
 #import all the webserver stuff
-from flask import Flask, render_template, flash, request, redirect, url_for
+from flask import Flask, render_template, flash, request, redirect, url_for, session
 #import the sqlite stuff
 import sqlite3, os, traceback, sys
 from database_functions import *
@@ -16,7 +16,14 @@ app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 def allowed_file(filename):     
   return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
-  
+#writing a wrapper function to check for login -- not applying yet
+def login_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if session.get("user_id") is None:
+            return redirect("/login")
+        return f(*args, **kwargs)
+    return decorated_function  
 
   
 #when someone goes to /reset in the website...
@@ -33,6 +40,33 @@ def reset_db():
   #send back to the main flask webserver what it should do. 
   return render_template('reset.html', msg = msg)
 
+@app.route("/login", methods=["GET", "POST"])
+def login():
+  """Log user in"""
+  conn = sqlite3.connect("database.db")
+  # Forget any user_id
+  session.clear()
+  # User reached route via POST (as by submitting a form via POST)
+  if request.method == "POST":
+      # Ensure username was submitted
+      if not request.form.get("username"):
+          return apology("must provide username", 403)
+      # Ensure password was submitted
+      elif not request.form.get("password"):
+          return apology("must provide password", 403)
+      # Query database for username
+      rows = conn.execute("SELECT * FROM users WHERE username = :username",
+                        username=request.form.get("username"))
+      # Ensure username exists and password is correct
+      if len(rows) != 1 or not check_password_hash(rows[0]["hash"], request.form.get("password")):
+          return apology("invalid username and/or password", 403)
+      # Remember which user has logged in
+      session["user_id"] = rows[0]["id"]
+      # Redirect user to home page
+      return redirect('/')
+  # User reached route via GET (as by clicking a link or via redirect)
+  else:
+      return render_template("login.html")
 
 
   
@@ -104,6 +138,7 @@ def addrec():
             # submit a empty part without filename
             if file.filename == '':
                 flash('No selected file')
+                success2 = True
             else:
               success2 = add_image(app, conn, cur, file, "question", question_id)
       #set message to say that it worked
