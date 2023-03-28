@@ -50,7 +50,7 @@ article {
 body {
   font-family: Arial, Helvetica, sans-serif;
 }
-form {
+form.add {
   max-width: 500px;
   margin: 0 auto;
   padding: 20px;
@@ -163,7 +163,8 @@ select {
   margin-right: 3px;
   border-radius: 5px;
   background-color: #c9cbfd;
-
+  margin-block-start: 0;
+  margin-block-end: 0.5em;
 }
 .detail-button{
   background-color: #666666;
@@ -182,7 +183,7 @@ select {
   display:None;
   z-index: 3;
   padding-top:6em;
-  padding-left:6em;
+  padding-left: 6em;
   position: fixed;
   left:0;
   top:0;
@@ -196,6 +197,11 @@ select {
   background-color: white;
   width: 20em;
   padding: 1em;
+}
+.modal-body>img {
+  width:80%;
+  margin:auto;
+  
 }
 
   

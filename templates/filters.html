@@ -1,9 +1,10 @@
+<!DOCTYPE html>
 <html>
   <head>
     <link rel="stylesheet" type="text/css" href="/static/main.css" />
   </head>
    <body>
-      <form action = "{{ url_for('filtered') }}" method = "POST">
+      <form class="add" action = "{{ url_for('filtered') }}" method = "POST">
         <h1>Search for Questions</h1>
         Question type<br/>
         <input type="radio" name="type" id="text" value="text"> Text <br>
