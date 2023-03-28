@@ -144,4 +144,56 @@ LEFT JOIN tag_join tj ON q.question_id = tj.question_id INNER JOIN tags t ON tj.
       questions = cur.fetchall();
       print(questions[0]["text"])
     #need to add the ability to filter
-  return questions  
+  return questions 
+
+def get_question(conn, cursor, q_id):
+  with conn:
+    cursor.execute('''SELECT 
+                    q.question_id qid, 
+                    type, 
+                    topic, 
+                    CASE
+                      WHEN topic="social_ethical" THEN "Social and ethical issues"
+                      WHEN topic="hardware_software" THEN "Hardware and software"
+                      WHEN topic="sda" THEN "Software development approaches"
+                      WHEN topic="dppd" THEN "Defining and understanding the problem, and planning and designing software solutions"
+                      WHEN topic="implementing" THEN "Implementing software solutions"
+                      WHEN topic="testing" THEN "Testing and evaluating software solutions"
+                      WHEN topic="maintaining" THEN "Maintaining software solutions"
+                      WHEN topic="developing_solutions" THEN "Developing Software Solutions"
+                      WHEN topic="application_sda" THEN "Application of software development approaches"
+                      WHEN topic="defining" THEN "Defining and understanding the problem"
+                      WHEN topic="planning" THEN "Planning and designing software solutions"
+                      WHEN topic="implementing" THEN "Implementation of software solution"
+                      WHEN topic="developing_package" THEN "Developing a Solution Package"
+                      WHEN topic="paradigms" THEN "Programming Paradigms"
+                      WHEN topic="interrelationship" THEN "The interrelationship between software and hardware"
+                    END AS topic_long, 
+                    marks, 
+                    image, 
+                    text, 
+                    answera, 
+                    answerb, 
+                    answerc, 
+                    answerd, 
+                    marking_criteria, 
+                    correct, 
+                    GROUP_CONCAT(tag_text,";") tags FROM questions q
+LEFT JOIN tag_join tj ON q.question_id = tj.question_id INNER JOIN tags t ON tj.tag_id = t.tag_id 
+                    WHERE
+                    q.question_id = ?
+                    GROUP BY  
+                    q.question_id, 
+                    type, 
+                    topic, 
+                    marks, 
+                    image, 
+                    text, 
+                    answera, 
+                    answerb, 
+                    answerc, 
+                    answerd, 
+                    marking_criteria, 
+                    correct;''', (q_id,))
+    question = cursor.fetchone()
+    return question

@@ -3,16 +3,15 @@ from flask import Flask, render_template, flash, request, redirect, url_for, ses
 #import the sqlite stuff
 import sqlite3, os, traceback, sys
 from database_functions import *
-#from werkzeug.utils import secure_filename
-#the name of your app - we'll use this a bunch
+
 app = Flask(__name__)
 app.secret_key = 'any random string'
 UPLOAD_FOLDER = 'static/images'
 ALLOWED_EXTENSIONS = set(['txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif'])
-#connect to the db
 
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
+#check correct filetype
 def allowed_file(filename):     
   return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
@@ -166,6 +165,65 @@ def get_list():
   #go to the list page with the rows variable as rows
   return render_template("list.html",rows = questions)
 
+@app.route('/addquest',methods = ['POST'])
+def add_quest():
+  conn = sqlite3.connect("database.db")
+  conn.row_factory = sqlite3.Row
+  #make a cursor which helps us do all the things
+  cur = conn.cursor()
+  try:
+    _question_id = int(request.form['question_id'])
+    # validate the received values
+    if _question_id and request.method == 'POST':
+      question = get_question(conn, cur, _question_id)
+      qArray = { question['qid'] : {
+        'type' : question['type'], 
+        'topic' : question['topic'], 
+        'topic_long' : question['topic_long'], 
+        'marks' : question['marks'],
+        'image' : question['image'],
+        'text' : question['text'],
+        'answera' : question['answera'],
+        'answerb' : question['answerb'],
+        'answerc' : question['answerc'],
+        'answerd' : question['answerd'],
+        'marking_criteria' : question['marking_criteria'],
+        'correct' : question['correct'],
+        'tags' : question['tags']
+        }}
+      total_questions = 0
+      total_marks = 0
+      
+      session.modified = True
+      if 'questions' in session:
+        if question['qid'] not in session['questions']:
+          session['questions'] = qArray
+          total_questions += 1
+          total_marks += question['marks']
+        else: #loop through all and work out number and marks
+          for key, details in session['questions'].items():
+            total_questions += 1
+            total_marks += details['marks']
+          
+      else:
+        session['questions'] = qArray
+        total_questions += 1
+        total_marks += question['marks']
+      session['total_questions'] = total_questions
+      session['total_marks'] = total_marks
+      print(f"num qs: {session['total_questions']} tot marks: {session['total_marks']} ")
+      
+      
+      return redirect(url_for('get_list'))
+    else:			
+      return 'Error while adding item to question bank'
+  except Exception as e:
+    print(f"exception: {e}")
+    return redirect(url_for('get_list'))
+  finally:
+    cur.close() 
+    conn.close()
+  
 @app.route('/filters')
 #run the function get_list
 def filters():
