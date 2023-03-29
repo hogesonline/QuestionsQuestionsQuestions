@@ -7,6 +7,7 @@ authors = ["Replit user <<>>"]
 [tool.poetry.dependencies]
 python = "^3.8"
 Flask = "^2.2.2"
+Flask-Session = "^0.4.0"
 
 [tool.poetry.dev-dependencies]
 python-lsp-server = {extras = ["yapf", "rope", "pyflakes"], version = "^1.5.0"}
