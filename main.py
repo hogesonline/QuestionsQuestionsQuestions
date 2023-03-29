@@ -7,14 +7,13 @@ from database_functions import *
 
 #set up the app and the ability to session stuff
 app = Flask(__name__)
-app.secret_key = "super secret key $%^$%^$"
-Session(app)
+app.secret_key = b'_5#y2L"F0Rkkkk!z\n\xec]/'
+
 
 UPLOAD_FOLDER = 'static/images'
 ALLOWED_EXTENSIONS = set(['txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif'])
 
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
-
 
 #check correct filetype
 def allowed_file(filename):     
@@ -28,7 +27,6 @@ def login_required(f):
             return redirect("/login")
         return f(*args, **kwargs)
     return decorated_function  
-
   
 #when someone goes to /reset in the website...
 @app.route('/reset')
@@ -44,6 +42,7 @@ def reset_db():
   #send back to the main flask webserver what it should do. 
   return render_template('reset.html', msg = msg)
 
+#not implemented
 @app.route("/login", methods=["GET", "POST"])
 def login():
   """Log user in"""
@@ -72,9 +71,7 @@ def login():
   else:
       return render_template("login.html")
 
-
-  
-#when someone goes to the address /enternew on the website
+#Add new questions and tag them from the list or add new tags
 @app.route('/enternew')
 #call the function new_animal()
 def new_question():
@@ -102,11 +99,7 @@ def addrec():
       
       msg1 = ""
       
-      #try means, see if you get to the end of a series of steps and if
-      #everything works then we're fine and if it doesn't
-      #do the "except" steps and undo everything you did in the try section.
-      #assign each of the pieces of information we receive to a new variable
-
+      #Storing all the data from the form into a dictionary for use adding to the database
       data = {}
       data["question_type"] = request.form['type']
       data["topic"] = request.form['topic']
@@ -149,13 +142,13 @@ def addrec():
       if success and success2:
         msg1 = "Question successfully added"
       else:
-        msg1 = f"Question not added s1:{success}, s2:{success2}"
+        msg1 = f"Question not added tags:{success}, image:{success2}"
       #close th database
       conn.close()
         
       return render_template("result.html",msg = msg1)
 
-#when someone goes to the address /list on the website
+#viewing all questions. Can thheoretically add to question cart
 @app.route('/list')
 #run the function get_list
 def get_list():
@@ -164,7 +157,6 @@ def get_list():
   #make a cursor which helps us do all the things
   cur = conn.cursor()
   questions = get_questions(conn, cur)
-  
     
   #return what the webserver should do next, 
   #go to the list page with the rows variable as rows
@@ -198,26 +190,27 @@ def add_quest():
         }}
       total_questions = 0
       total_marks = 0
-      
-      session.modified = True
-      if 'questions' in session:
-        if question['qid'] not in session['questions']:
-          session['questions'] = qArray
-          total_questions += 1
-          total_marks += question['marks']
-        else: #loop through all and work out number and marks
-          for key, details in session['questions'].items():
-            total_questions += 1
-            total_marks += details['marks']
-          
-      else:
+      print("hey", session.get("user", "nup"))
+      print(session.get('questions'))
+      #if 'questions' not in the session yet
+      if 'questions' not in session:
+        #add it
         session['questions'] = qArray
+      #else
+      else:
+        #if the current question is not in the session variable
+        if question['qid'] not in session['questions']:
+          #add it
+          session['questions'].update(qArray)
+      #loop through all things in dict to add to the marks
+      for key, details in session.get('questions',{}).items():
+        print(key,details['marks'] )
         total_questions += 1
-        total_marks += question['marks']
+        total_marks += details['marks'] 
       session['total_questions'] = total_questions
       session['total_marks'] = total_marks
-      print(f"num qs: {session['total_questions']} tot marks: {session['total_marks']} ")
-      
+        
+      print(f"num qs: {session.get('total_questions')} tot marks: {session.get('total_marks')} ")
       
       return redirect(url_for('get_list'))
     else:			
@@ -246,8 +239,7 @@ def filters():
 #run the function get_list
 def filtered():
   print("Hello")
-
-
+  print(session.get("user", "nup"))
   
 #when someone goes to the address / (i.e. the home page, no extra address)
 @app.route('/')
@@ -256,17 +248,12 @@ def home():
   #which does nothing
   #but returns what the webserver should do next
   #go to the home page
+  session.clear()
   session["user"] = "me"
   return render_template('home.html')
-
-
-
-
   
 #Check that this isn't being run by another module
 if __name__ == '__main__':
   #run on the host 0.0.0.0
   app.run(debug = True, host = '0.0.0.0')
 
-
-#using the animal cards from https://aca.edu.au/resources/decision-trees-animal-trading-cards/
