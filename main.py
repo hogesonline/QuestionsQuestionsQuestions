@@ -1,15 +1,20 @@
 #import all the webserver stuff
 from flask import Flask, render_template, flash, request, redirect, url_for, session
+from flask_session import Session
 #import the sqlite stuff
 import sqlite3, os, traceback, sys
 from database_functions import *
 
+#set up the app and the ability to session stuff
 app = Flask(__name__)
-app.secret_key = 'any random string'
+app.secret_key = "super secret key $%^$%^$"
+Session(app)
+
 UPLOAD_FOLDER = 'static/images'
 ALLOWED_EXTENSIONS = set(['txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif'])
 
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+
 
 #check correct filetype
 def allowed_file(filename):     
@@ -251,6 +256,7 @@ def home():
   #which does nothing
   #but returns what the webserver should do next
   #go to the home page
+  session["user"] = "me"
   return render_template('home.html')
 
 

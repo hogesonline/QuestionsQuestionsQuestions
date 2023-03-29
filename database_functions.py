@@ -28,7 +28,6 @@ def reset_tables(conn, msg):
 
 def get_unique_tags(conn, cur, add_tags, tags):
   add_tags = add_tags + tags
-  logfile = open("logfile.txt", "w")
   tags_to_add = []
   try:
     # con.rollback() is called after the with block finishes with an exception,
@@ -47,13 +46,8 @@ def get_unique_tags(conn, cur, add_tags, tags):
           else:
             tags_to_add.append(result[0])
   except Exception as e:
-    print("well, something went wrong.")
-    exc_type, exc_value, exc_traceback = sys.exc_info()
-    lines = traceback.format_exception(exc_type, exc_value, exc_traceback)
-    file.write( "\n".join("!! " + line for line in lines))
-    file.write("\n")
+    print("well, something went wrong.", e)
     tags_to_add = []
-    logfile.close()
   finally:
     return tags_to_add
 
@@ -64,8 +58,8 @@ def add_question(conn, cur, data):
       cur.execute("""INSERT INTO questions (type, topic, marks, text, answera, answerb, answerc, answerd, marking_criteria, correct) VALUES(?,?,?,?,?,?,?,?,?,?);""", (data["question_type"], data["topic"], data["marks"],  data["text"], data["ansA"], data["ansB"], data["ansC"], data["ansD"], data["markingcrit"], data["correct"]))
       #dealing with images - need them to have the Question_num as an image name
       question_id = cur.lastrowid
-  except:
-    print("stuff broke")
+  except Exception as e:
+    print("stuff broke", e)
   return question_id
 
 def add_question_tag_links (conn, cur, ids, question_id):
@@ -74,8 +68,8 @@ def add_question_tag_links (conn, cur, ids, question_id):
       for tag_id in ids:
         cur.execute("""INSERT INTO tag_join (question_id, tag_id) VALUES(?,?);""", (question_id, tag_id))
       return True  
-  except:
-    print("things go wrong")
+  except Exception as e:
+    print("things go wrong", e)
     return False
     
 def add_image (app, conn, cur, file, image_type, question_id):        
@@ -87,8 +81,8 @@ def add_image (app, conn, cur, file, image_type, question_id):
       #save the database change
       cur.execute(f"""UPDATE questions SET image = '{path}' WHERE question_id = {question_id}""")
       return True
-  except:
-    print("image not inserted")
+  except Exception as e:
+    print("image not inserted", e)
     return False
 
 def get_questions(conn, cur, filters=[]):
@@ -142,7 +136,6 @@ LEFT JOIN tag_join tj ON q.question_id = tj.question_id INNER JOIN tags t ON tj.
                     correct;''')
       #fetch all the records 
       questions = cur.fetchall();
-      print(questions[0]["text"])
     #need to add the ability to filter
   return questions 
 
