@@ -1,6 +1,6 @@
 #import all the webserver stuff
 from flask import Flask, render_template, flash, request, redirect, url_for, session
-from flask_session import Session
+#from flask_session import Session
 #import the sqlite stuff
 import sqlite3, os, traceback, sys
 from database_functions import *
@@ -47,6 +47,7 @@ def reset_db():
 def login():
   """Log user in"""
   conn = sqlite3.connect("database.db")
+  cur = conn.cursor()
   # Forget any user_id
   session.clear()
   # User reached route via POST (as by submitting a form via POST)
@@ -58,7 +59,7 @@ def login():
       elif not request.form.get("password"):
           return apology("must provide password", 403)
       # Query database for username
-      rows = conn.execute("SELECT * FROM users WHERE username = :username",
+      rows = cur.execute("SELECT * FROM users WHERE username = :username",
                         username=request.form.get("username"))
       # Ensure username exists and password is correct
       if len(rows) != 1 or not check_password_hash(rows[0]["hash"], request.form.get("password")):
@@ -173,7 +174,7 @@ def add_quest():
     # validate the received values
     if _question_id and request.method == 'POST':
       question = get_question(conn, cur, _question_id)
-      qArray = { question['qid'] : {
+      qArray = { str(question['qid']) : {
         'type' : question['type'], 
         'topic' : question['topic'], 
         'topic_long' : question['topic_long'], 
@@ -190,18 +191,23 @@ def add_quest():
         }}
       total_questions = 0
       total_marks = 0
-      print("hey", session.get("user", "nup"))
-      print(session.get('questions'))
       #if 'questions' not in the session yet
       if 'questions' not in session:
         #add it
         session['questions'] = qArray
+        print(session['questions'])
+        print('added')
+        
       #else
       else:
         #if the current question is not in the session variable
-        if question['qid'] not in session['questions']:
+        if str(_question_id)  not in session['questions']:
           #add it
+          print("made it")
+          print('before ', session['questions'])
+          print('to add ', qArray)
           session['questions'].update(qArray)
+          print('after ', session['questions'])
       #loop through all things in dict to add to the marks
       for key, details in session.get('questions',{}).items():
         print(key,details['marks'] )
@@ -221,9 +227,62 @@ def add_quest():
   finally:
     cur.close() 
     conn.close()
+
+@app.route('/delquest',methods = ['POST'])
+def del_quest():
+  print(session['questions'])
+  _question_id = request.form['question_id']
+  print(_question_id, repr(_question_id))
+  if 'questions' in session:
+    chosen = session.pop('questions')
+    if _question_id in chosen:
+      del chosen[_question_id]
+      print("#######found and deleted########")
+    else:
+      print("#######not found########")
+    session['questions'] = chosen
+  print(session['questions'])
+  return redirect(url_for('selected'))
   
-@app.route('/filters')
-#run the function get_list
+
+@app.route('/selected')
+#run the function selected
+def selected():
+  questions = []
+  if "questions" in session:
+    print('Yay', session["questions"])
+    for key in session["questions"]:
+      q_deets = session["questions"][key]
+      q_deets.update({"question_id":int(key)})
+      q_deets["tags"] =q_deets["tags"].split(";") 
+      questions.append(q_deets)
+  print(questions)
+  return render_template("selected.html",rows = questions)
+    
+    
+@app.route('/filtered')
+#not implemented
+#run the function filtered
+def filtered():
+  print("Hello")
+  session.clear()
+  return(session.get("user", "nup"))
+  
+#when someone goes to the address / (i.e. the home page, no extra address)
+@app.route('/')
+#run the function home
+def home():
+  #which does nothing
+  #but returns what the webserver should do next
+  #go to the home page
+  return render_template('home.html')
+  
+#Check that this isn't being run by another module
+if __name__ == '__main__':
+  #run on the host 0.0.0.0
+  app.run(debug = True, host = '0.0.0.0')
+
+#not implemented  
 def filters():
   conn = sqlite3.connect("database.db")
   #make a cursor which helps us do all the things
@@ -234,26 +293,3 @@ def filters():
   tags.sort()
   #just redirects to the page where you can search for a question after looking up the available tags
   return render_template("filters.html", rows = tags)
-
-@app.route('/filtered')
-#run the function get_list
-def filtered():
-  print("Hello")
-  print(session.get("user", "nup"))
-  
-#when someone goes to the address / (i.e. the home page, no extra address)
-@app.route('/')
-#run the function home
-def home():
-  #which does nothing
-  #but returns what the webserver should do next
-  #go to the home page
-  session.clear()
-  session["user"] = "me"
-  return render_template('home.html')
-  
-#Check that this isn't being run by another module
-if __name__ == '__main__':
-  #run on the host 0.0.0.0
-  app.run(debug = True, host = '0.0.0.0')
-

@@ -151,7 +151,7 @@ select {
   padding: 10px 20px;
 }
 
-.question > .question-text {
+.question > .q-text {
   display: inline-block;
   width: 300px;
   margin-left: 30px;
@@ -175,7 +175,17 @@ select {
   cursor: pointer;
   transition: background-color 0.2s ease-in-out;
 }
-.detail-button:hover{
+.detail-button-sm{
+  background-color: #666666;
+  color: #fff;
+  border: none;
+  border-radius: 0.5em;
+  font-size: 1em;
+  cursor: pointer;
+  transition: background-color 0.2s ease-in-out;
+  padding: 0.7em 1.5em;
+}
+.detail-button:hover, .detail-button-sm:hover{
   background-color: #333333;
 
 }
@@ -202,6 +212,123 @@ select {
   width:80%;
   margin:auto;
   
+}
+
+.question-list {
+  width: 1000px;
+  margin: 80px auto;
+  background: #FFFFFF;
+  box-shadow: 1px 2px 3px 0px rgba(0,0,0,0.10);
+  border-radius: 6px;
+  display: flex;
+  flex-direction: column;
+}
+.title {
+  height: 60px;
+  border-bottom: 1px solid #E1E8EE;
+  padding: 20px 30px;
+  color: #5E6977;
+  font-size: 18px;
+  font-weight: 400;
+}
+ 
+.item {
+  padding: 20px 30px;
+  height: 120px;
+  display: flex;
+}
+
+.question-text {
+  padding-top: 10px;
+  margin-right: 60px;
+  width: 115px;
+}
+ 
+.description span {
+  display: block;
+  font-size: 14px;
+  color: #43484D;
+  font-weight: 400;
+}
+.container {
+  max-width: 1000px;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: 10px;
+  padding-right: 10px;
+}
+
+h2.table {
+  font-size: 26px;
+  margin: 20px 0;
+  text-align: center;
+  small {
+    font-size: 0.5em;
+  }
+}
+
+.responsive-table {
+}
+  li {
+    border-radius: 3px;
+    padding: 25px 30px;
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 25px;
+  }
+  .table-header {
+    background-color: #95A5A6;
+    font-size: 14px;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+  }
+  .table-row {
+    background-color: #ffffff;
+    box-shadow: 0px 0px 9px 0px rgba(0,0,0,0.1);
+  }
+  .col-1 {
+    flex-basis: 25%;
+  }
+  .col-2 {
+    flex-basis: 20%;
+  }
+  .col-3 {
+    flex-basis: 10%;
+  }
+  .col-4 {
+    flex-basis: 45%;
+  }
+  .col-5 {
+    flex-basis: 10%;
+  }
+  
+  @media all and (max-width: 767px) {
+    .table-header {
+      display: none;
+    }
+    .table-row{
+      
+    }
+    li {
+      display: block;
+    }
+    .col {
+      
+      flex-basis: 100%;
+      
+    }
+    .col {
+      display: flex;
+      padding: 10px 0;
+      &:before {
+        color: #6C7A89;
+        padding-right: 10px;
+        content: attr(data-label);
+        flex-basis: 50%;
+        text-align: right;
+      }
+    }
+  }
 }
 
   

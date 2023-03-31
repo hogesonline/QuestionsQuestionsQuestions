@@ -4,68 +4,133 @@
     <link rel="stylesheet" type="text/css" href="/static/main.css" />
   </head>
    <body>
-      <form class="add" action = "{{ url_for('addrec') }}" method = "POST" enctype="multipart/form-data">
-        <h1>Add a Question</h1>
-        Question type<br/>
-        <input type="radio" name="type" id="text" value="text"> Text <br>
-        <input type="radio" name="type" id="mc" value="mc"> Multiple Choice <br>
-         
-        Topic<br/>
-        <select id="topic" name="topic">
-          <option value=""> </option>
-            <option value="social_ethical">Social and ethical issues</option>
-            <option value="hardware_software">Hardware and software</option>
-            <option value="sda">Software development approaches</option>
-            <option value="dppd">Defining and understanding the problem, and planning and designing software solutions</option>
-            <option value="implementing">Implementing software solutions</option>
-            <option value="testing">Testing and evaluating software solutions</option>
-            <option value="maintaining">Maintaining software solutions</option>
-            <option value="developing_solutions">Developing Software Solutions</option>
-            <option value="application_sda">Application of software development approaches</option>
-            <option value="defining">Defining and understanding the problem</option>
-            <option value="planning">Planning and designing software solutions</option>
-            <option value="implementation">Implementation of software solution</option>
-            <option value="developing_package">Developing a Solution Package</option>
-            <option value="paradigms">Programming Paradigms</option>
-            <option value="interrelationship">The interrelationship between software and hardware</option>
-         </select><br/><br/>
-        
-        Marks<br/>
-        <input type = "text" name = "marks" /><br/><br/>
-
-        Image<br/>
-        <input type = "file" name = "image" /><br/><br/>
-        
-         Text<br/>
-        <input type = "text" name = "text" /><br/><br/>
-
-        Answer A<br/>
-        <input type = "text" name = "ansA" /><br/><br/>
-
-        Answer B<br/>
-        <input type = "text" name = "ansB" /><br/><br/>
-
-        Answer C<br/>
-        <input type = "text" name = "ansC" /><br/><br/>
-
-        Answer D<br/>
-        <input type = "text" name = "ansD" /><br/><br/>
-
-        Correct<br/>
-        <input type = "text" name = "correct" /><br/><br/>
-
-        Marking Criteria<br/>
-        <input type = "text" name = "markingcrit" /><br/><br/>
-        Tags (select all that apply)<br/>
-        <select id="tags" name="tags" size="8" multiple>
-          {% for tag in tags %}
-    <option value="{{tag}}">{{tag|title }}</option>
-          {% endfor %}
-        </select><br/><br/>
-        Add Tags (separate tags with semicolons e.g. algorihtms; ebnf) <br/>
-        <input type = "text"  id="add_tags" name="add_tags" /><br/><br/>
-
-         <input type = "submit" value = "submit" /><br/>
-      </form>
+     <form class="add" action="{{ url_for('addrec') }}" enctype="multipart/form-data" method="POST">
+    <h1>
+        Add a Question
+    </h1>
+Question type
+    <br />
+    <input id="text" name="type" type="radio" value="text" />
+     Text
+    <br />
+    <input id="mc" name="type" type="radio" value="mc" />
+     Multiple Choice
+    <br />
+     Topic
+    <br />
+    <select id="topic" name="topic">
+        <option value="">
+        </option>
+        <option value="social_ethical">
+            Social and ethical issues
+        </option>
+        <option value="hardware_software">
+            Hardware and software
+        </option>
+        <option value="sda">
+            Software development approaches
+        </option>
+        <option value="dppd">
+            Defining and understanding the problem, and planning and designing software solutions
+        </option>
+        <option value="implementing">
+            Implementing software solutions
+        </option>
+        <option value="testing">
+            Testing and evaluating software solutions
+        </option>
+        <option value="maintaining">
+            Maintaining software solutions
+        </option>
+        <option value="developing_solutions">
+            Developing Software Solutions
+        </option>
+        <option value="application_sda">
+            Application of software development approaches
+        </option>
+        <option value="defining">
+            Defining and understanding the problem
+        </option>
+        <option value="planning">
+            Planning and designing software solutions
+        </option>
+        <option value="implementation">
+            Implementation of software solution
+        </option>
+        <option value="developing_package">
+            Developing a Solution Package
+        </option>
+    		<option value="paradigms">
+    			Programming Paradigms
+    		</option>
+    		<option value="interrelationship">
+    			The interrelationship between software and hardware
+    		</option>
+    	</select>
+    	<br />
+    	<br />
+    	 Marks
+    	<br />
+    	<input name="marks" type="text" />
+    	<br />
+    	<br />
+    	 Image
+    	<br />
+    	<input name="image" type="file" />
+    	<br />
+    	<br />
+    	 Text
+    	<br />
+    	<input name="text" type="text" />
+    	<br />
+    	<br />
+    	 Answer A
+    	<br />
+    	<input name="ansA" type="text" />
+    	<br />
+    	<br />
+    	 Answer B
+    	<br />
+    	<input name="ansB" type="text" />
+    	<br />
+    	<br />
+    	 Answer C
+    	<br />
+    	<input name="ansC" type="text" />
+    	<br />
+    	<br />
+    	 Answer D
+    	<br />
+    	<input name="ansD" type="text" />
+    	<br />
+    	<br />
+    	 Correct
+    	<br />
+    	<input name="correct" type="text" />
+    	<br />
+    	<br />
+    	 Marking Criteria
+    	<br />
+    	<input name="markingcrit" type="text" />
+    	<br />
+    	<br />
+    	 Tags (select all that apply)
+    	<br />
+    	<select id="tags" multiple="multiple" name="tags" size="8">
+    		{% for tag in tags %}
+    		<option value="{{tag}}">
+    			{{tag|title }}
+    		</option>
+      {% endfor %}
+    	</select>
+    	<br />
+    	<br />
+    	 Add Tags (separate tags with semicolons e.g. algorihtms; ebnf)
+    	<br />
+    	<input id="add_tags" name="add_tags" type="text" />
+    	<br />
+    	<br />
+    	<input type="submit" value="submit" />
+    </form>
    </body>
 </html>

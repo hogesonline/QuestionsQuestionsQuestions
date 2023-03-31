@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <link rel="stylesheet" type="text/css" href="/static/main.css" />
+  </head>
+   <body>
+    <div class="container">
+	<ul class="responsive-table">
+		<li class="table-header">
+			<div class="col col-1">&nbsp;</div>
+			<div class="col col-2">Topic</div>
+			<div class="col col-3">Type</div>
+			<div class="col col-4">Text</div>
+			<div class="col col-5">Marks</div>
+		</li>
+		{% for row in rows %}
+		<li class="table-row">
+      <form action="{{ url_for('del_quest') }}" enctype="multipart/form-data" method="POST">
+  			<div class="col col-1" data-label="Buttons">
+          <input style="display: None;" name="question_id" type="text" value="{{row['question_id']}}" />
+          <button id="" class="detail-button-sm">Delete</button> 
+          <button class="detail-button-sm" onclick="popUp(this)">Detail</button>
+        </div>
+      </form>
+			<div class="col col-2" data-label="Topic">{{ row["topic_long"]}}</div>
+			<div class="col col-3" data-label="Type">{{ row["type"]}}</div>
+			<div class="col col-4" data-label="Text">{{ row["text"]}}</div>
+			<div class="col col-5" data-label="Marks">{{ row["marks"]}}</div>
+		</li>
+		{% endfor %}</ul>
+	<!-- Modal blocks--> 
+    {% for row in rows %}
+    <div id="modal_{{ row['question_id'] }}" class="modal" role="dialog">
+			<div class="modal-view"><!-- Modal content-->
+				<div>
+					<div>
+						<h4 class="modal-title">{{row["topic_long"]}}</h4>
+					</div>
+					<div class="modal-body">
+            {% if row['image'] %} <img src="{{row['image']}}" alt="Image for question" /> {% endif %}
+						<p>Marks: {{row["marks"]}}</p>
+						<p>{{row["text"]}}</p>
+						<p>{{row["marking_criteria"]}}</p>
+						<p>{{row["answer"]}}</p>
+						<div>{% if row["tags"] %} 
+                {% for tag in row["tags"] %}
+							  <h4 class="tag">{{ tag }}</h4>
+							  {% endfor %} 
+              {% endif %}</div>
+					</div>
+					<div class="modal-footer">
+            <form action="{{ url_for('del_quest') }}" enctype="multipart/form-data" method="POST">
+              <input style="display: None;" name="question_id" type="text" value="{{row['question_id']}}" />
+              <button class="detail-button" type="button" onclick=popDown()>Close</button> 
+              <button class="detail-button" type="submit">Delete</button></div>
+            </form>
+				</div>
+			</div>
+		</div>
+	</form>{% endfor %}</div>
+<div style="display: block;"><a href="/">Go back to home page</a></div>
+   </body>
+  <script>
+    let thisId = "";
+    function popUp(element) {
+      thisId = element.id
+      document.getElementById(`modal_${thisId}`).style.display = "block";
+    }
+    function popDown() {
+      console.log ("ID: "+ thisId)
+      document.getElementById(`modal_${thisId}`).style.display = "none";
+    }
+  </script>
+</html>
