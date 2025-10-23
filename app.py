@@ -1,8 +1,12 @@
 #import all the webserver stuff
 from flask import Flask, render_template, flash, request, redirect, url_for, session
+# from flask_talisman import Talisman
+from werkzeug.security import check_password_hash, generate_password_hash
 from flask_session import Session
 #import the sqlite stuff
-import sqlite3, os, traceback, sys
+import sqlite3
+from functools import wraps
+from sqlalchemy import engine as eng
 from database_functions import *
 
 #set up the app and the ability to session stuff
@@ -10,11 +14,16 @@ app = Flask(__name__)
 app.secret_key = "super secret key $%^$%^$"
 Session(app)
 
+# Force HTTPS in production - DISABLED for local development
+# if not app.debug:
+#     Talisman(app, force_https=True)
+
 UPLOAD_FOLDER = 'static/images'
 ALLOWED_EXTENSIONS = set(['txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif'])
 
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
+engine = eng.create_engine('sqlite:///database.db')
 
 #check correct filetype
 def allowed_file(filename):     
@@ -29,70 +38,150 @@ def login_required(f):
         return f(*args, **kwargs)
     return decorated_function  
 
+def apology(message, code=400):
+    """Render message as an apology to user."""
+    return render_template("apology.html", top=code, bottom=message), code
   
 #when someone goes to /reset in the website...
+# login is required to reset the database
+
 @app.route('/reset')
+@login_required
 #call the function reset_db()
 def reset_db():
-  #connect to the database
-  conn = sqlite3.connect('database.db')
-  msg = "Opened database successfully"
-  #call function to drop and create the tables
-  msg = reset_tables(conn, msg)
-  #close the connection to the database
-  conn.close()
-  #send back to the main flask webserver what it should do. 
+  msg = reset_tables(engine)
   return render_template('reset.html', msg = msg)
 
 @app.route("/login", methods=["GET", "POST"])
 def login():
   """Log user in"""
-  conn = sqlite3.connect("database.db")
   # Forget any user_id
-  session.clear()
+  if session.get("user_id") is not None:
+      return redirect('/')
+
   # User reached route via POST (as by submitting a form via POST)
   if request.method == "POST":
+      username = request.form.get("username")
+      password = request.form.get("password")
       # Ensure username was submitted
-      if not request.form.get("username"):
+      if not username:
           return apology("must provide username", 403)
       # Ensure password was submitted
-      elif not request.form.get("password"):
+      elif not password:
           return apology("must provide password", 403)
-      # Query database for username
-      rows = conn.execute("SELECT * FROM users WHERE username = :username",
-                        username=request.form.get("username"))
-      # Ensure username exists and password is correct
-      if len(rows) != 1 or not check_password_hash(rows[0]["hash"], request.form.get("password")):
+      # Query database for username - pass plain text password, not hash
+      user = login_user(engine, username, password)
+      if user is None:
           return apology("invalid username and/or password", 403)
       # Remember which user has logged in
-      session["user_id"] = rows[0]["id"]
+      session["user_id"] = user.user_id
+      session["username"] = user.username
       # Redirect user to home page
       return redirect('/')
   # User reached route via GET (as by clicking a link or via redirect)
   else:
       return render_template("login.html")
 
+@app.route("/register", methods=["GET", "POST"])
+def register():
+  """Register user"""
 
+  if session.get("user_id") is not None:
+      return redirect('/')
+
+  # User reached route via POST (as by submitting a form via POST)
+  if request.method == "POST":
+      username = request.form.get("username")
+      email = request.form.get("email")
+      password = request.form.get("password")
+      confirm_password = request.form.get("confirm_password")
+      # Ensure username was submitted
+      if not username:
+          return apology("must provide username", 403)
+      # Ensure email was submitted
+      elif not email:
+          return apology("must provide email", 403)
+      # Ensure password was submitted
+      elif not password:
+          return apology("must provide password", 403)
+      # Ensure confirm password was submitted
+      elif not confirm_password:
+          return apology("must provide confirm password", 403)
+      # Ensure passwords match
+      elif password != confirm_password:
+          return apology("passwords must match", 403)
+      # Attempt to register user
+      result = register_user(engine, username, email, password)
+      
+      # Check if registration was successful
+      if not result["success"]:
+          if result["error"] == "email_exists":
+              return apology("Email already exists. Please use a different email address.", 403)
+          else:
+              return apology(f"Registration failed: {result['error']}", 500)
+
+      # Redirect user to login page
+      return redirect('/login')
+  # User reached route via GET (as by clicking a link or via redirect)
+  else:
+      return render_template("register.html")
+
+@app.route("/forgot_password", methods=["GET", "POST"])
+def forgot_password():
+  """Forgot password"""
+  
+  if session.get("user_id") is not None:
+      return redirect('/')
+  # TODO: Implement email verification for password reset
+  # User reached route via POST (as by submitting a form via POST)
+  if request.method == "POST":
+      email = request.form.get("email")
+      uname = request.form.get("username")
+      new_password = request.form.get("password")
+      confirm_password = request.form.get("confirm_password")
+      # Ensure username was submitted
+      if not uname:
+          return apology("must provide username", 403)
+      # Ensure email was submitted
+      if not email:
+          return apology("must provide email", 403)
+      if not new_password:
+          return apology("must provide new password", 403)
+      if not confirm_password:
+          return apology("must provide confirm password", 403)
+      if new_password != confirm_password:
+          return apology("passwords must match", 403)
+      # Attempt to reset password
+      result = reset_user_password(engine, uname, email, new_password)
+      if not result["success"]:
+          return apology(f"Password reset failed: {result['error']}", 500)
+      return redirect('/login')
+  
+  # User reached route via GET (as by clicking a link or via redirect)
+  else:
+      return render_template("pwd_reset.html")
   
 #when someone goes to the address /enternew on the website
 @app.route('/enternew')
+@login_required
 #call the function new_animal()
 def new_question():
-  conn = sqlite3.connect("database.db")
-  #make a cursor which helps us do all the things
-  cur = conn.cursor()
-  #execute the insert statement in SQL
-  cur.execute("""SELECT tag_text FROM tags""")
-  tags = [x[0] for x in cur.fetchall()]
+  #connect to the db
+  # get tags
+  tags = get_unique_tags(engine)
+  # get topics
+  topics = get_topics(engine)
   tags.sort()
   print(tags)
+  print(topics)
   #go to the add_question.html page
-  return render_template('add_question.html', tags = tags)
+  return render_template('add_question.html', tags = tags, topics=topics)
 
 #when someone goes to the address /addrec on the website 
 #they could either be posting or getting (POST, put stuff there, GET, request stuff)
 @app.route('/addrec',methods = ['POST'])
 #call the function addrec
+@login_required
 def addrec():
   #if they POSTed information --> that means they pressed submit on our animal.html page 
     success = False
@@ -157,6 +246,7 @@ def addrec():
 
 #when someone goes to the address /list on the website
 @app.route('/list')
+@login_required
 #run the function get_list
 def get_list():
   conn = sqlite3.connect("database.db")
@@ -171,6 +261,8 @@ def get_list():
   return render_template("list.html",rows = questions)
 
 @app.route('/addquest',methods = ['POST'])
+#run the function add_quest
+@login_required
 def add_quest():
   conn = sqlite3.connect("database.db")
   conn.row_factory = sqlite3.Row
@@ -231,6 +323,7 @@ def add_quest():
   
 @app.route('/filters')
 #run the function get_list
+@login_required
 def filters():
   conn = sqlite3.connect("database.db")
   #make a cursor which helps us do all the things
@@ -243,6 +336,7 @@ def filters():
   return render_template("filters.html", rows = tags)
 
 @app.route('/filtered')
+@login_required
 #run the function get_list
 def filtered():
   print("Hello")
@@ -256,7 +350,6 @@ def home():
   #which does nothing
   #but returns what the webserver should do next
   #go to the home page
-  session["user"] = "me"
   return render_template('home.html')
 
 
